@@ -30,8 +30,21 @@ public class MainMenu extends RMenu{
      */
     private class __AboutAction implements ActionListener{
         /*Begin Overridden Methods*/
-        @Override public void actionPerformed(ActionEvent event){
+        public void actionPerformed(ActionEvent event){
             MainMenu.this.getParentWindow().performAction(MapEditor.Actions.OPEN_ABOUT_WINDOW);
+        }
+        /*End Overridden Methods*/
+    }
+    
+    /**
+     * Action the Load Map menu item should take.
+     * 
+     * @author Nicholas Rogé
+     */
+    private class __LoadMapAction implements ActionListener{
+        /*Begin Overridden Methods*/
+        public void actionPerformed(ActionEvent event){
+            //TODO_HIGH:  Define Load Map action
         }
         /*End Overridden Methods*/
     }
@@ -43,7 +56,7 @@ public class MainMenu extends RMenu{
      */
     private class __NewMapAction implements ActionListener{
         /*Begin Overridden Methods*/
-        @Override public void actionPerformed(ActionEvent event){
+        public void actionPerformed(ActionEvent event){
             MainMenu.this.getParentWindow().performAction(MapEditor.Actions.DISPLAY_NEW_MAP);
         }
         /*End Overridden Methods*/
@@ -56,7 +69,7 @@ public class MainMenu extends RMenu{
      */
     private class __ExitAction implements ActionListener{
         /*Begin Overridden Methods*/
-        @Override public void actionPerformed(ActionEvent event){
+        public void actionPerformed(ActionEvent event){
             MainMenu.this.getParentWindow().performAction(RWindow.Actions.CLOSE_WINDOW);
         }
         /*End Overridden Methods*/
@@ -89,6 +102,12 @@ public class MainMenu extends RMenu{
                 menu_item = new JMenuItem("New Map");
                 menu_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,KeyEvent.CTRL_MASK));
                 menu_item.addActionListener(new __NewMapAction());
+                menu.add(menu_item);
+            }
+            {
+                menu_item = new JMenuItem("Load Map");
+                menu_item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,KeyEvent.CTRL_MASK));
+                menu_item.addActionListener(new __LoadMapAction());
                 menu.add(menu_item);
             }
             {

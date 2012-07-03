@@ -18,7 +18,7 @@ import roge.jrpgme.gui.panel.NewMapPanel;
 public class MapEditor extends RWindow{
     private class __OpenAboutWindowAction implements WindowAction{
         /*Begin Overridden Methods*/
-        @Override public boolean performAction(Object data){
+        public boolean performAction(Object data){
             new AboutWindow(MapEditor.this).setVisible(true);
             
             return true;
@@ -28,7 +28,7 @@ public class MapEditor extends RWindow{
     
     private class __DisplayNewMapAction implements WindowAction{
         /*Begin Overridden Methods*/
-        @Override public boolean performAction(Object data){
+        public boolean performAction(Object data){
             MapEditor.this.setActivePanel(new NewMapPanel(MapEditor.this));
             MapEditor.this.pack();
             

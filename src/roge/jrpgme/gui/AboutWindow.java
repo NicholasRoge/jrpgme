@@ -18,6 +18,7 @@ public class AboutWindow extends RWindow{
     private RWindow __parent;
     
     
+    /*End Constructors*/
     public AboutWindow(RWindow parent){
         if(parent==null){
             throw new NullPointerException("Argument 'parent' must not be null.");
@@ -29,8 +30,11 @@ public class AboutWindow extends RWindow{
         this.__parent=parent;
         this.__parent.setEnabled(false);       
     }
+    /*Begin Constructors*/
     
-    @Override public void onWindowClosing(WindowEvent event){
+    /*Begin Overridden Methods*/
+    public void onWindowClosing(WindowEvent event){
         this.__parent.setEnabled(true);
     }
+    /*End Overridden Methods*/
 }
