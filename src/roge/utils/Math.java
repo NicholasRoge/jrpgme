@@ -26,6 +26,8 @@ public class Math{
 			/*End Constructors*/
 		}
 		
+		
+		
 		public static enum Operation{
 			/*Begin Enumerations*/
 			/**NOP is a special case operator only intended for use when an expression only has one parameter.*/
@@ -86,7 +88,9 @@ public class Math{
 			}
 			
 			
+			private static Operation[] __functions;
 			private static Operation[] __operation_orders;
+			private static Operation[] __operators;
 			
 			private boolean           __is_function;
 			private OperationExecutor __operation_executor;
@@ -165,10 +169,43 @@ public class Math{
 				return Operation.__operation_orders;
 			}
 			
+			public static Operation[] getAllFunctions(){
+				List<Operation> functions = null;
+				
+				
+				if(Operation.__functions==null){
+					functions = new ArrayList<Operation>();
+					
+					for(Operation operation:Operation.values()){
+						if(operation.__is_function){
+							functions.add(operation);
+						}
+					}
+					
+					Operation.__functions=functions.toArray(new Operation[functions.size()]);
+				}
+				
+				return Operation.__functions;
+			}
+			
 			public static Operation getFunction(String query){
 				for(Operation operation:Operation.values()){
 					if(operation.__is_function&&operation.__operation_string.equals(query)){
 						return operation;
+					}
+				}
+				
+				return null;
+			}
+			
+			
+			public static Operation functionFromSymbol(String symbol){
+				final char raw_symbol = symbol.substring(1,symbol.length()-1).charAt(0);
+				
+				
+				for(Operation function:Operation.getAllFunctions()){
+					if(function.ordinal()==(int)raw_symbol){
+						return function;
 					}
 				}
 				
@@ -307,11 +344,21 @@ public class Math{
 				}
 
 				
-				/*Perform any mathmatic functions and add in multiplication signs when you have something right next to a returned expression that isn't an operator.*/
+				/*Perform any arithmetic functions and add in multiplication signs when you have something right next to a returned expression that isn't an operator.*/
 				function=null;
-				
 				if(sub_start>0){
-					if(!Operation.isOperator(""+expression.charAt(sub_start-1))){
+					if(expression.charAt(sub_start-1)==')'||expression.charAt(sub_start-1)==']'||Math.isNumeric(""+expression.charAt(sub_start-1))){
+						expression = expression.substring(0,sub_start) + Operation.fromString("*").toSymbol() + expression.substring(sub_start);
+						
+						sub_start+=3;
+						sub_end+=3;
+					}else if(sub_start>2&&expression.charAt(sub_start-1)=='}'){
+						function=Operation.functionFromSymbol(expression.substring(sub_start-3,sub_start));
+					}
+				}
+				
+				/*if(sub_start>2){
+					if(!Operation.isOperator(){
 						expression_string="";
 						while((sub_start-1-expression_string.length())>-1){  //Essentially, while the current character (as we move to the left) isn't an operator or a closing parenthesis
 							if(Operation.isOperator(""+expression.charAt(sub_start-1-expression_string.length()))||expression.charAt(sub_start-1-expression_string.length())==')'){
@@ -328,11 +375,14 @@ public class Math{
 							sub_end++;
 						}
 					}
-				}
+				}*/
 				
 				if(sub_end<(expression.length()-1)){
-					if(!Operation.isOperator(""+expression.charAt(sub_end+1))){
-						expression=expression.substring(0,sub_end+1)+"*"+expression.substring(sub_end+1);
+					char test=expression.charAt(sub_end+1);
+					if(expression.charAt(sub_end+1)=='{'){
+						if(Operation.functionFromSymbol(expression.substring(sub_end+1,sub_end+4))!=null){
+							expression=expression.substring(0,sub_end+1)+Operation.fromString("*").toSymbol()+expression.substring(sub_end+1);
+						}
 						//We added this after the subexpression, so we don't need to increment their values
 					}
 				}
@@ -343,12 +393,12 @@ public class Math{
 					e.left_param = function._performOperation(e.evaluate(),0);
 					e.operation = Operation.NOP;
 					
-					sub_start-=function.toString().length();
+					sub_start-=3;
 				}
 				
 				if(e.operation==Operation.NOP){
 					if(e.left_param<0){
-						expression=expression.substring(0,sub_start)+"0"+number_format.format(e.left_param)+expression.substring(sub_end+1);
+						expression=expression.substring(0,sub_start)+"0"+Operation.fromString("-").toSymbol()+number_format.format((e.left_param*-1))+expression.substring(sub_end+1);
 					}else{
 						expression=expression.substring(0,sub_start)+number_format.format(e.left_param)+expression.substring(sub_end+1);
 					}
@@ -360,8 +410,8 @@ public class Math{
 			
 			
 			for(Operation operation:operation_order){						
-				while((sub_start=expression.indexOf(operation.toString()))!=-1){			
-					expression_indices = Expression.getExpressionIndices(expression, sub_start,operation.toString());
+				while((sub_start=expression.indexOf(operation.toSymbol()))!=-1){			
+					expression_indices = Expression.getExpressionIndices(expression, sub_start);
 					
 					e = new Expression();
 					expression_string = expression.substring(expression_indices[0],expression_indices[1]+1);
@@ -403,9 +453,9 @@ public class Math{
 		 * 
 		 * @return
 		 */
-		protected static int[] getExpressionIndices(String expression,int operator_start_index,String operator){
+		protected static int[] getExpressionIndices(String expression,int operator_start_index){
 			int     index  = -1;
-			int[]   indices={-1,operator_start_index-1,operator_start_index+operator.length(),-1};
+			int[]   indices={-1,operator_start_index-1,operator_start_index+3,-1};
 			boolean period_found=false;
 			
 			
@@ -437,7 +487,7 @@ public class Math{
 			period_found=false;
 			index=indices[2];
 			while(index<(expression.length()-1)){
-				if(!Math.isNumeric(""+expression.charAt(index))&&!(expression.charAt(index)=='{'||expression.charAt(index)=='}')){
+				if(!Math.isNumeric(""+expression.charAt(index))&&!(expression.charAt(index)=='['||expression.charAt(index)==']')){
 					if(expression.charAt(index)=='-'&&index==indices[2]){
 						continue;
 					}else if(expression.charAt(index)=='.'){
