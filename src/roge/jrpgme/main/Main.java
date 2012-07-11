@@ -4,6 +4,7 @@
  */
 package roge.jrpgme.main;
 
+import roge.jrpg.model.Experience;
 import roge.jrpgme.gui.MapEditor;
 
 /**
@@ -20,7 +21,8 @@ public class Main{
     		//Nothing really to do here.  This just means that we aren't using the Mac OS.
     	}
     	
-        new MapEditor().setVisible(true);
+    	System.out.print(roge.utils.Math.Expression.fromString("1*[pi]").evaluate());
+        //new MapEditor().setVisible(true);
     }
 
 }
