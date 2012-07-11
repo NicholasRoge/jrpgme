@@ -6,6 +6,7 @@ package roge.jrpgme.main;
 
 import roge.jrpg.model.Experience;
 import roge.jrpgme.gui.MapEditor;
+import roge.utils.Math.Expression;
 
 /**
  * @author Nicholas Rogé
@@ -20,8 +21,8 @@ public class Main{
     	}catch(Exception e){
     		//Nothing really to do here.  This just means that we aren't using the Mac OS.
     	}
-    	
-    	System.out.print(roge.utils.Math.Expression.fromString("1*[pi]").evaluate());
+
+    	System.out.print(Expression.fromString("4(sin(0)+3)").evaluate());
         //new MapEditor().setVisible(true);
     }
 
