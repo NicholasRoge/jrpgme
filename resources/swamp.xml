@@ -1,0 +1,8 @@
+<tile>
+	<name>Swamp</name>
+	<movement_cost>2</movement_cost>
+	
+	<stat_mod>
+		<speed>-2</speed>
+	</stat_mod>
+</tile>
