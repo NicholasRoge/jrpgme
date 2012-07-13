@@ -22,7 +22,7 @@ public class Main{
     		//Nothing really to do here.  This just means that we aren't using the Mac OS.
     	}
 
-    	System.out.print(Expression.fromString("4(cos(0)+3)(4)").evaluate());
+    	System.out.print(Expression.fromString("5-cos(5)"));
         //new MapEditor().setVisible(true);
     }
 

@@ -3,7 +3,7 @@ package roge.jrpg.model;
 import java.util.List;
 
 public class Experience{
-	private String __level_equation="( 1 * ( 2 ^ ( 16 / ( 2 + 6 ) ) ) - 2 )";
+	private String __level_equation="sqrt({player_experience})";
 	
 	
 	/*Begin Other Essential Methods*/

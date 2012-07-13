@@ -36,24 +36,24 @@ public class Math{
 					return left_param;
 				}
 			}),
-			SIN("sin",-1,true,new OperationExecutor(){
+			SIN("sin",3,true,new OperationExecutor(){
 				public double performOperation(double left_param,double right_param){
-					return java.lang.Math.sin(left_param);
+					return left_param*java.lang.Math.sin(right_param);
 				}
 			}),
-			COS("cos",-1,true,new OperationExecutor(){
+			COS("cos",3,true,new OperationExecutor(){
 				public double performOperation(double left_param,double right_param){
-					return java.lang.Math.cos(left_param);
+					return left_param*java.lang.Math.cos(right_param);
 				}
 			}),
-			TAN("tan",-1,true,new OperationExecutor(){
+			TAN("tan",3,true,new OperationExecutor(){
 				public double performOperation(double left_param,double right_param){
-					return java.lang.Math.tan(left_param);
+					return left_param*java.lang.Math.tan(right_param);
 				}
 			}),
-			SQRT("sqrt",-1,true,new OperationExecutor(){
+			SQRT("sqrt",3,true,new OperationExecutor(){
 				public double performOperation(double left_param,double right_param){
-					return java.lang.Math.sqrt(left_param);
+					return left_param*java.lang.Math.sqrt(right_param);
 				}
 			}),
 			ADDITION("+",0,false,new OperationExecutor(){
@@ -157,6 +157,8 @@ public class Math{
 									operations.add(index,operation);
 									
 									break;
+								}else if(index==(operations.size()-1)){
+									operations.add(operation);
 								}
 							}
 						}
@@ -352,33 +354,13 @@ public class Math{
 						
 						sub_start+=3;
 						sub_end+=3;
-					}else if(sub_start>2&&expression.charAt(sub_start-1)=='}'){
+					}/*else if(sub_start>2&&expression.charAt(sub_start-1)=='}'){
 						function=Operation.functionFromSymbol(expression.substring(sub_start-3,sub_start));
-					}
+					}*/
 				}
 				
-				/*if(sub_start>2){
-					if(!Operation.isOperator(){
-						expression_string="";
-						while((sub_start-1-expression_string.length())>-1){  //Essentially, while the current character (as we move to the left) isn't an operator or a closing parenthesis
-							if(Operation.isOperator(""+expression.charAt(sub_start-1-expression_string.length()))||expression.charAt(sub_start-1-expression_string.length())==')'){
-								break;
-							}
-							
-							expression_string=expression.charAt(sub_start-1-expression_string.length())+expression_string;
-						}
-						
-						function=Operation.getFunction(expression_string);
-						if(function==null){  //We have to perform a check for functions
-							expression=expression.substring(0,sub_start)+"*"+expression.substring(sub_start);
-							sub_start++;
-							sub_end++;
-						}
-					}
-				}*/
 				
 				if(sub_end<(expression.length()-1)){
-					char test=expression.charAt(sub_end+1);
 					if(expression.charAt(sub_end+1)=='{'){
 						if(Operation.functionFromSymbol(expression.substring(sub_end+1,sub_end+4))!=null){
 							expression=expression.substring(0,sub_end+1)+Operation.fromString("*").toSymbol()+expression.substring(sub_end+1);
@@ -389,12 +371,12 @@ public class Math{
 				
 				/*Replace the the substring with its expression*/
 				e=Expression._fromString(expression.substring(sub_start+1,sub_end));
-				if(function!=null){
+				/*if(function!=null){
 					e.left_param = function._performOperation(e.evaluate(),0);
 					e.operation = Operation.NOP;
 					
 					sub_start-=3;
-				}
+				}*/
 				
 				if(e.operation==Operation.NOP){
 					if(e.left_param<0){
@@ -633,9 +615,20 @@ public class Math{
 					pre_clear = false;
 					post_clear = false;
 					
+					
 					//TODO_HIGH:  Make sure we haven't found an operation within a symbol before we continue.
 					//TODO_HIGH:  Write some sort of error checking for this.  If a user types in (mistakenly) cosine rather than cos, it will mistakenly pick up the sin portion of that, leaving the expression as co{raw_symbol}e.
-					expression = expression.substring(0,sub_start) + operation.toSymbol() + expression.substring(sub_end);
+					if(operation.__is_function){
+						if(sub_start==0){
+							expression = "1" + operation.toSymbol() + expression.substring(sub_end);
+						}else if(!Math.isNumeric(""+expression.charAt(sub_start-1))){
+							expression = expression.substring(0,sub_start) + "1" + operation.toSymbol() + expression.substring(sub_end);
+						}else{
+							expression = expression.substring(0,sub_start) + operation.toSymbol() + expression.substring(sub_end);
+						}
+					}else{
+						expression = expression.substring(0,sub_start) + operation.toSymbol() + expression.substring(sub_end);
+					}
 				}
 			}
 			
@@ -643,120 +636,6 @@ public class Math{
 			return expression;
 		}
 		/*End Other Essential Methods*/
-	}
-	
-	/*protected static Expression _toExpression(String string_expression){
-		final Expression.Operation[] operation_order=Expression.Operation.getOperationOrder();
-		final String[]                 valid_functions={"sqrt","sin","cos","tan"};
-		
-		int[]  adjacent=null;
-		Expression expression;
-		String string_to_convert=null;
-		Expression return_expression;
-		int    sub_start=-1;
-		int    sub_end=-1;
-		int    parenthesis_open=0;
-		int[]  pow_start=null;
-		int[]  pow_end={-1,-1};
-		
-		
-		string_expression=new String(string_expression);
-		while((sub_start=string_expression.indexOf('('))!=-1){
-			for(sub_end=sub_start+1,parenthesis_open=0;sub_end<string_expression.length();sub_end++){
-				if(string_expression.charAt(sub_end)=='('){
-					parenthesis_open++;
-				}else if(string_expression.charAt(sub_end)==')'){
-					if(parenthesis_open==0){
-						break;
-					}else{
-						parenthesis_open--;
-					}
-				}
-			}
-
-			string_expression=string_expression.substring(0,sub_start)+Math.__evaluate(string_expression.substring(sub_start+1,sub_end))+string_expression.substring(sub_end+1);
-		}
-		
-		string_expression=Math.__evaluateExponents(string_expression);
-		
-		System.out.println("Result of evaluation:  \""+string_expression+"\".");
-		
-		return return_expression;
-	}*/
-	
-	private static String __evaluateExponents(String expression){
-		double d_result=0;
-		String result=null;
-		int    sign_index=-1;
-		int    expression_start=-1;
-		int    expression_end=-1;
-		
-		
-		result=new String(expression);
-		while((sign_index=result.indexOf('^'))!=-1){
-			//Get the location of the start of the expression
-			expression_start=sign_index;
-			while(expression_start>0){
-				expression_start--;
-				
-				if(!(Math.isNumeric(""+result.charAt(expression_start))||result.charAt(expression_start)=='.')){
-					
-				}
-			}
-			if(expression_start<0){
-				expression_start++;
-			}else if(result.charAt(expression_start)!='-'){
-				expression_start++;
-			}
-			
-			if(sign_index-expression_start<=0){
-				throw new NumberFormatException();
-			}
-			
-			//Get the location of the end of the expression
-			expression_end=sign_index;
-			do{
-				expression_end++;
-				if(result.charAt(expression_end)=='-'){
-					expression_end++;
-				}
-			}while(expression_end<result.length()&&(Math.isNumeric(""+result.charAt(expression_end))||result.charAt(expression_end)=='.'));
-			
-			if(expression_end-sign_index<=0){
-				throw new NumberFormatException();
-			}
-			
-			//Evaluate the expression
-			d_result=java.lang.Math.pow(
-				Double.parseDouble(result.substring(expression_start,sign_index)),
-				Double.parseDouble(result.substring(sign_index+1,expression_end))
-			);
-						
-			//Replace the evaluated expression in the string.
-			result=
-				result.substring(0,expression_start)
-				+Double.toString(d_result)
-				+result.substring(expression_end);
-		}
-
-		return result;
-	}
-	
-	/**
-	 * 
-	 * 
-	 * @param expression
-	 * @return
-	 */
-	private static int[] getFirstExpressionIndices(String expression){  //(4+5*3)
-		boolean dot_found=false;
-		int[]   indices=null;
-		
-		
-		
-		
-		
-		return indices;
 	}
 	
 	public static boolean isNumeric(String string){
