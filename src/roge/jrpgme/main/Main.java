@@ -4,9 +4,9 @@
  */
 package roge.jrpgme.main;
 
-import roge.jrpg.model.Experience;
-import roge.jrpgme.gui.MapEditor;
+
 import roge.utils.Math.Expression;
+import roge.utils.Math.Expression.InvalidExpressionException;
 
 /**
  * @author Nicholas Rogé
@@ -22,7 +22,12 @@ public class Main{
     		//Nothing really to do here.  This just means that we aren't using the Mac OS.
     	}
 
-    	System.out.print(Expression.fromString("5-cos(5)"));
+
+    	try{
+    		System.out.print(Expression.fromString("sin([pi]/2)(5-cos(0)4)").evaluate());
+    	}catch(InvalidExpressionException e){
+    		System.out.print(e.getMessage());
+    	}
         //new MapEditor().setVisible(true);
     }
 

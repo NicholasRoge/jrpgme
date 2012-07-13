@@ -6,7 +6,14 @@ import java.util.List;
 
 public class Math{
 	public static class Expression{
-		public static class InvalidExpressionException extends RuntimeException{
+		/**
+		 * Thrown if a parsing error occurs using the {@link Expression#fromString(String)} method.
+		 * 
+		 * @author Nicholas Roge
+		 */
+		public static class InvalidExpressionException extends Exception{
+			private static final long serialVersionUID = -1038733285386980175L;
+
 			/*Begin Constructors*/
 			/**
 			 * Constructs the exception.
@@ -27,7 +34,11 @@ public class Math{
 		}
 		
 		
-		
+		/**
+		 * Describes an operation that should be used when evaluating the mathematical expression.
+		 * 
+		 * @author Nicholas Roge
+		 */
 		public static enum Operation{
 			/*Begin Enumerations*/
 			/**NOP is a special case operator only intended for use when an expression only has one parameter.*/
@@ -304,11 +315,11 @@ public class Math{
 			return this.operation._performOperation(this.left_param,this.right_param);
 		}
 		
-		public static Expression fromString(String expression){
+		public static Expression fromString(String expression) throws InvalidExpressionException{
 			return Expression._fromString(Expression._validateStringExpression(expression));
 		}
 		
-		protected static Expression _fromString(String expression){
+		protected static Expression _fromString(String expression) throws InvalidExpressionException{
 			final Operation[] operation_order = Operation.getOperationOrder();
 			
 			Expression e = null;
@@ -344,39 +355,10 @@ public class Math{
 				if(sub_start-sub_end==0){
 					throw new InvalidExpressionException("Empty parenthesis set found while parsing expression.");
 				}
-
 				
-				/*Perform any arithmetic functions and add in multiplication signs when you have something right next to a returned expression that isn't an operator.*/
-				function=null;
-				if(sub_start>0){
-					if(expression.charAt(sub_start-1)==')'||expression.charAt(sub_start-1)==']'||Math.isNumeric(""+expression.charAt(sub_start-1))){
-						expression = expression.substring(0,sub_start) + Operation.fromString("*").toSymbol() + expression.substring(sub_start);
-						
-						sub_start+=3;
-						sub_end+=3;
-					}/*else if(sub_start>2&&expression.charAt(sub_start-1)=='}'){
-						function=Operation.functionFromSymbol(expression.substring(sub_start-3,sub_start));
-					}*/
-				}
-				
-				
-				if(sub_end<(expression.length()-1)){
-					if(expression.charAt(sub_end+1)=='{'){
-						if(Operation.functionFromSymbol(expression.substring(sub_end+1,sub_end+4))!=null){
-							expression=expression.substring(0,sub_end+1)+Operation.fromString("*").toSymbol()+expression.substring(sub_end+1);
-						}
-						//We added this after the subexpression, so we don't need to increment their values
-					}
-				}
 				
 				/*Replace the the substring with its expression*/
 				e=Expression._fromString(expression.substring(sub_start+1,sub_end));
-				/*if(function!=null){
-					e.left_param = function._performOperation(e.evaluate(),0);
-					e.operation = Operation.NOP;
-					
-					sub_start-=3;
-				}*/
 				
 				if(e.operation==Operation.NOP){
 					if(e.left_param<0){
@@ -426,16 +408,7 @@ public class Math{
 			return e;
 		}
 		
-		/**
-		 * 
-		 * 
-		 * @param expression
-		 * @param operator_start_index
-		 * @param operator
-		 * 
-		 * @return
-		 */
-		protected static int[] getExpressionIndices(String expression,int operator_start_index){
+		protected static int[] getExpressionIndices(String expression,int operator_start_index) throws InvalidExpressionException{
 			int     index  = -1;
 			int[]   indices={-1,operator_start_index-1,operator_start_index+3,-1};
 			boolean period_found=false;
@@ -524,7 +497,7 @@ public class Math{
 		 * 
 		 * @return Returns the processed and validated expression. 
 		 */
-		protected static String _validateStringExpression(String expression){
+		protected static String _validateStringExpression(String expression) throws InvalidExpressionException{
 			Constants       constant = null;
 			char            current_character = 0x00;
 			int             nearest_symbol_closing = 0;
@@ -610,13 +583,17 @@ public class Math{
 			}
 			
 			for(Operation operation:Operation.values()){
-				while((sub_start=expression.indexOf(operation.toString()))!=-1){
+				while((sub_start=expression.indexOf(operation.toString(),sub_start))!=-1){
 					sub_end = sub_start+operation.toString().length();
 					pre_clear = false;
 					post_clear = false;
 					
 					
 					//TODO_HIGH:  Make sure we haven't found an operation within a symbol before we continue.
+					for(int index=0;index<expression.length();index++){
+						
+					}
+					
 					//TODO_HIGH:  Write some sort of error checking for this.  If a user types in (mistakenly) cosine rather than cos, it will mistakenly pick up the sin portion of that, leaving the expression as co{raw_symbol}e.
 					if(operation.__is_function){
 						if(sub_start==0){
@@ -629,6 +606,33 @@ public class Math{
 					}else{
 						expression = expression.substring(0,sub_start) + operation.toSymbol() + expression.substring(sub_end);
 					}
+				}
+			}
+			
+			/*Finally, lets turn all instances of 4(20) into 4*(20)  (I don't know what the proper name for that is)*/
+			sub_start=0;
+			while((sub_start=expression.indexOf('(',sub_start))!=-1){
+				if(sub_start>0){
+					if(isNumeric(""+expression.charAt(sub_start-1))||expression.charAt(sub_start-1)==')'){
+						expression = expression.substring(0,sub_start)+Operation.MULTIPLICATION.toSymbol()+expression.substring(sub_start);
+					}else{
+						sub_start++;
+					}
+				}else{
+					sub_start++;
+				}
+			}
+			
+			sub_start=0;
+			while((sub_start=expression.indexOf(')',sub_start))!=-1){
+				if(sub_start<expression.length()-1){
+					if(isNumeric(""+expression.charAt(sub_start+1))||expression.charAt(sub_start+1)=='('){
+						expression = expression.substring(0,sub_start+1)+Operation.MULTIPLICATION.toSymbol()+expression.substring(sub_start+1);
+					}else{
+						sub_start++;
+					}
+				}else{
+					sub_start++;
 				}
 			}
 			
